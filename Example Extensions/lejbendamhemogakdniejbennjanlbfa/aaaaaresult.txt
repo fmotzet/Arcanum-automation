@@ -1,0 +1,44 @@
+FALSE POSITIVE: local DOM injection triggered?
+Extenions cheanges facebook reaction
+cant detect anything
+
+The Subtle Taint Flow Arcanum Would Detect
+The flag is not about data being stolen, but about the principle of how data flows within the page. Here is the step-by-step process Arcanum would follow:
+
+The Source: Reading from the DOM
+
+The researchers' test setup would have a replayed Facebook page where sensitive elements are marked, or the tool would consider the entire page content as a potential source.
+
+The script reads the text of elements on the page using textNode.nodeValue.
+
+According to the Arcanum paper, reading content from DOM elements (
+
+nodeValue, innerText, etc.) is a defined taint source. At this moment, the text string (e.g., "Like") becomes tainted.
+
+
+The Propagation: Control Flow Dependency
+
+The tainted string is then used inside a conditional statement: if (textNode.nodeValue==human[j]).
+
+The Arcanum taint tracking engine is specifically designed to handle this. The paper states that if a tainted value is used in a conditional expression, any operations inside that conditional block are also considered tainted.
+
+This means the execution of the code inside the if block is now dependent on sensitive (tainted) data.
+
+The "Sink": Writing Back to the DOM
+
+Because the if statement was true, the code executes the line: textNode.nodeValue = dict.serval;.
+
+This is a write operation to the DOM. Because this action is dependent on the tainted data from the step above, the write itself is considered a tainted operation.
+
+While this is not an exfiltration sink like a network request, Arcanum's engine is sensitive enough to log this as a completed data flow: data was read from the DOM, and that data influenced a subsequent write to the DOM.
+
+Conclusion: A Technical Finding, Not a Malicious One
+In this scenario, Arcanum is functioning exactly as designed by its creators. It has detected a complete data flow from a source to a sink. However, this specific flow does not represent a real-world privacy risk to the user.
+
+Is there malicious intent? No. The extension is doing exactly what it promises in a harmless way.
+
+Is data being stolen? No. The data never leaves the webpage.
+
+Is this a false positive? Yes, in the sense that it is not a meaningful security threat. It is a true positive only from a purely technical, data-flow-tracking perspective. The tool has correctly flagged that information read from one part of the page influenced a change in another part of the page, which is the limit of what it was asked to do.
+
+It is very likely the researchers sent you this file as an example of the sensitivity of their tool—showing that it can detect even these subtle, intra-page data flows that do not involve any data exfiltration.
