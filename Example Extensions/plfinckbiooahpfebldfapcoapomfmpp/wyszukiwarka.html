@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="wyszukiwarka.css">
+    <title>Wyszukiwarka</title>
+    <script type="text/javascript" src="wyszukiwarka.js"></script>
+</head>
+
+<style>
+
+</style>
+
+<body>
+    <form id="szukaj-form" method="post">
+        <div style="text-align: center">
+            Wyszukiwarka umożliwia przeszukiwanie plików HTML ksiąg wieczystych pobranych przez wtyczkę.
+            <ul style="text-align: left">
+                <li>Po wciśnięciu "Szukaj", wskaż folder, kóry zawiera pliki ksiąg pobrane przez wtyczkę.</li>
+                <li>Opcja "Dodaj kolejną frazę" umowżliwia podanie dodatkowych fraz które muszą się pojawić w zaznaczonych działach, aby księga pojawiła się w wynikach wyszukiwania.
+                    Przykładowo, jeżeli w pierwszej frazie podamy "Jan" a w kolejnej "Kowalski", to wyszukają się wyłącznie księgi, które zawierają oba te słowa
+                    (dla działów, które są zaznaczone zarówno dla frazy "Jan" jak i dla "Kowalski").</li>
+                <li>Frazy obsługują wyrażenia regularne - aby ich użyć rozpocznij i zakończ wyrażenie znakiem <b>'/'</b>, przykładowo: <b>/abc.*def/</b> </li>
+                <li>Opcja "Nie zawiera" wyklucza księgi z podaną frazą (i dla wybranych działów) z wyszukiwania. Jeżeli zostanie znaleziona w danym dziale, jest on pomijany nawet jeżeli inne frazy zostanę w nim wykryte.</li>
+            </ul>
+
+        </div>
+
+        <div id="frazy-wydzialy">
+            <div class="frazy-wydzialy" id="frazy-wydzialy-0">
+                <div style="display: flex">
+                    <label class="form-label" for="fraza0" style="padding-right: 8px">Fraza do wyszukania:</label>
+                    <input type="text" name="fraza[0]" id="fraza0" value="">
+                    <label>
+                        <input type="checkbox" name="not_fraza[0]" id="not_fraza0">Nie zawiera
+                    </label>
+                </div>
+
+                <div class="error" id="error-fraza-0" style="display: none">
+                    <label class="form-label"></label>
+                    <span></span>
+                </div>
+
+                <div>
+                    <label class="form-label">Działy:</label>
+                    <label>
+                        <input type="checkbox" name="dzialy[0][]" value="I-O" checked> I-O
+                    </label>
+                    <label>
+                        <input type="checkbox" name="dzialy[0][]" value="I-Sp" checked> I-Sp
+                    </label>
+                    <label>
+                        <input type="checkbox" name="dzialy[0][]" value="II" checked> II
+                    </label>
+                    <label>
+                        <input type="checkbox" name="dzialy[0][]" value="III" checked> III
+                    </label>
+                    <label>
+                        <input type="checkbox" name="dzialy[0][]" value="IV" checked> IV
+                    </label>
+                </div>
+
+                <div class="error" id="error-dzialy-0" style="display: none">
+                    <label class="form-label"></label>
+                    <span></span>
+                </div>
+
+                <button class="dodaj-fraze-btn" id="dodaj-fraze-btn" type="button">+ Dodaj kolejną frazę</button>
+            </div>
+        </div>
+
+
+
+
+
+        <div>
+            <label for="kod-wydzialu" class="form-label">Kody wydziałów:</label>
+            <input type="text" id="kod-wydzialu" style="width: 240px" list="kody-wydzialow" value="">
+            <button type="button" id="btn-dodaj-wydzial">Dodaj</button>
+        </div>
+
+        <div class="error" id="error-kod-wydzialu" style="display: none">
+            <label class="form-label"></label>
+            <span></span>
+        </div>
+
+        <div id="wydzialy-labels" style="padding-left: 158px; margin-top: 3px">
+<!--            <div class="wydzial-label" data-kod="Wszystkie">Wszystkie</div>-->
+        </div>
+
+        <div>
+            <label class="form-label">Zakres numerów:</label>
+            <input id="zakres-od" type="number" step="1" min="1" value="1" disabled style="width: 98px;"> -
+            <input id="zakres-do" type="number" step="1" min="1" value="" disabled style="width: 98px;">
+            <label>
+                <input type="checkbox" id="input-wszystkie-numery" checked> Wszystkie
+            </label>
+        </div>
+
+        <div class="error" id="error-zakres" style="display: none">
+            <label class="form-label"></label>
+            <span></span>
+        </div>
+
+        <div class="button">
+            <button type="button" id="btn-szukaj">Szukaj</button>
+            <button type="button" id="btn-zatrzymaj" disabled>Zatrzymaj</button>
+        </div>
+
+        <div id="wyniki" style="display: none;">
+            <label class="form-label">Znalezione KW:</label>
+            <div>
+                <div id="wyniki-kw" style="padding-left: 0.5em; overflow-y: auto; max-height: 200px; width: 190px">
+                </div>
+                <div id="search-in-progress" class="loading" style="display: none">Szukam</div>
+                <div id="nothing-found" style="display: block; margin-top: 0; font-weight: bold">Nic nie znaleziono dla podanych parametrów</div>
+                <div id="result-buttons" style="display: none; justify-content: center">
+                    <button id="kopiuj-wynik">Kopiuj</button>
+                    <button id="export-txt">Eksportuj do pliku txt</button>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div style="display: flex; justify-content: center; padding: 3px;">
+        Wersja: 1.1.4 (Aktualizacja: 18.08.2023)
+        &nbsp;<a target="_blank" href="changelog.html">zobacz zmiany</a>
+    </div>
+</body>
+
+<datalist id="kody-wydzialow">
+    <option value="Wszystkie" label=""></option>
+    <option value="BB1B" label="BB1B - BIELSKO-BIAŁA">
+    <option value="BB1C" label="BB1C - CIESZYN">
+    <option value="BB1Z" label="BB1Z - ŻYWIEC">
+    <option value="BI1B" label="BI1B - BIAŁYSTOK">
+    <option value="BI1P" label="BI1P - BIELSK PODLASKI">
+    <option value="BI1S" label="BI1S - SOKÓŁKA">
+    <option value="BI2P" label="BI2P - HAJNÓWKA">
+    <option value="BI3P" label="BI3P - SIEMIATYCZE">
+    <option value="BY1B" label="BY1B - BYDGOSZCZ">
+    <option value="BY1I" label="BY1I - INOWROCŁAW">
+    <option value="BY1M" label="BY1M - MOGILNO">
+    <option value="BY1N" label="BY1N - NAKŁO NAD NOTECIĄ">
+    <option value="BY1S" label="BY1S - ŚWIECIE">
+    <option value="BY1T" label="BY1T - TUCHOLA">
+    <option value="BY1U" label="BY1U - SZUBIN">
+    <option value="BY1Z" label="BY1Z - ŻNIN">
+    <option value="BY2T" label="BY2T - SĘPÓLNO KRAJEŃSKIE">
+    <option value="CIKW" label="CIKW - WARSZAWA">
+    <option value="CZ1C" label="CZ1C - CZĘSTOCHOWA">
+    <option value="CZ1L" label="CZ1L - LUBLINIEC">
+    <option value="CZ1M" label="CZ1M - MYSZKÓW">
+    <option value="CZ1Z" label="CZ1Z - ZAWIERCIE">
+    <option value="CZ2C" label="CZ2C - KŁOBUCK">
+    <option value="DIRS" label="DIRS - ŻŻ DIRS">
+    <option value="EL1B" label="EL1B - BRANIEWO">
+    <option value="EL1D" label="EL1D - DZIAŁDOWO">
+    <option value="EL1E" label="EL1E - ELBLĄG">
+    <option value="EL1I" label="EL1I - IŁAWA">
+    <option value="EL1N" label="EL1N - NOWE MIASTO LUBAWSKIE">
+    <option value="EL1O" label="EL1O - OSTRÓDA">
+    <option value="EL2O" label="EL2O - MORĄG">
+    <option value="GD1A" label="GD1A - STAROGARD GDAŃSKI">
+    <option value="GD1E" label="GD1E - KOŚCIERZYNA">
+    <option value="GD1G" label="GD1G - GDAŃSK">
+    <option value="GD1I" label="GD1I - KWIDZYN">
+    <option value="GD1M" label="GD1M - MALBORK">
+    <option value="GD1R" label="GD1R - KARTUZY">
+    <option value="GD1S" label="GD1S - SOPOT">
+    <option value="GD1T" label="GD1T - TCZEW">
+    <option value="GD1W" label="GD1W - WEJHEROWO">
+    <option value="GD1Y" label="GD1Y - GDYNIA">
+    <option value="GD2I" label="GD2I - SZTUM">
+    <option value="GD2M" label="GD2M - NOWY DWÓR GDAŃSKI">
+    <option value="GD2W" label="GD2W - PUCK">
+    <option value="GL1G" label="GL1G - GLIWICE">
+    <option value="GL1J" label="GL1J - JASTRZĘBIE-ZDRÓJ">
+    <option value="GL1R" label="GL1R - RACIBÓRZ">
+    <option value="GL1S" label="GL1S - RUDA ŚLĄSKA">
+    <option value="GL1T" label="GL1T - TARNOWSKIE GÓRY">
+    <option value="GL1W" label="GL1W - WODZISŁAW ŚLĄSKI">
+    <option value="GL1X" label="GL1X - ŻORY">
+    <option value="GL1Y" label="GL1Y - RYBNIK">
+    <option value="GL1Z" label="GL1Z - ZABRZE">
+    <option value="GW1G" label="GW1G - GORZÓW WIELKOPOLSKI">
+    <option value="GW1K" label="GW1K - STRZELCE KRAJEŃSKIE">
+    <option value="GW1M" label="GW1M - MIĘDZYRZECZ">
+    <option value="GW1S" label="GW1S - SŁUBICE">
+    <option value="GW1U" label="GW1U - SULĘCIN">
+    <option value="JG1B" label="JG1B - BOLESŁAWIEC">
+    <option value="JG1J" label="JG1J - JELENIA GÓRA">
+    <option value="JG1K" label="JG1K - KAMIENNA GÓRA">
+    <option value="JG1L" label="JG1L - LUBAŃ">
+    <option value="JG1S" label="JG1S - LWÓWEK ŚLĄSKI">
+    <option value="JG1Z" label="JG1Z - ZGORZELEC">
+    <option value="KA1B" label="KA1B - BĘDZIN">
+    <option value="KA1C" label="KA1C - CHORZÓW">
+    <option value="KA1D" label="KA1D - DĄBROWA GÓRNICZA">
+    <option value="KA1I" label="KA1I - SIEMIANOWICE ŚLĄSKIE">
+    <option value="KA1J" label="KA1J - JAWORZNO">
+    <option value="KA1K" label="KA1K - KATOWICE">
+    <option value="KA1L" label="KA1L - MYSŁOWICE">
+    <option value="KA1M" label="KA1M - MIKOŁÓW">
+    <option value="KA1P" label="KA1P - PSZCZYNA">
+    <option value="KA1S" label="KA1S - SOSNOWIEC">
+    <option value="KA1T" label="KA1T - TYCHY">
+    <option value="KA1Y" label="KA1Y - BYTOM">
+    <option value="KI1A" label="KI1A - STASZÓW">
+    <option value="KI1B" label="KI1B - BUSKO ZDRÓJ">
+    <option value="KI1H" label="KI1H - STARACHOWICE">
+    <option value="KI1I" label="KI1I - KAZIMIERZA WIELKA">
+    <option value="KI1J" label="KI1J - JĘDRZEJÓW">
+    <option value="KI1K" label="KI1K - KOŃSKIE">
+    <option value="KI1L" label="KI1L - KIELCE">
+    <option value="KI1O" label="KI1O - OSTROWIEC ŚWIĘTOKRZYSKI">
+    <option value="KI1P" label="KI1P - PIŃCZÓW">
+    <option value="KI1R" label="KI1R - SKARŻYSKO-KAMIENNA">
+    <option value="KI1S" label="KI1S - SANDOMIERZ">
+    <option value="KI1T" label="KI1T - OPATÓW">
+    <option value="KI1W" label="KI1W - WŁOSZCZOWA">
+    <option value="KN1K" label="KN1K - KOŁO">
+    <option value="KN1N" label="KN1N - KONIN">
+    <option value="KN1S" label="KN1S - SŁUPCA">
+    <option value="KN1T" label="KN1T - TUREK">
+    <option value="KO1B" label="KO1B - BIAŁOGARD">
+    <option value="KO1D" label="KO1D - DRAWSKO POMORSKIE">
+    <option value="KO1E" label="KO1E - SŁAWNO">
+    <option value="KO1I" label="KO1I - SZCZECINEK">
+    <option value="KO1K" label="KO1K - KOSZALIN">
+    <option value="KO1L" label="KO1L - KOŁOBRZEG">
+    <option value="KO1W" label="KO1W - WAŁCZ">
+    <option value="KO2B" label="KO2B - ŚWIDWIN">
+    <option value="KR1B" label="KR1B - SUCHA BESKIDZKA">
+    <option value="KR1C" label="KR1C - CHRZANÓW">
+    <option value="KR1E" label="KR1E - OŚWIĘCIM">
+    <option value="KR1H" label="KR1H - PROSZOWICE">
+    <option value="KR1I" label="KR1I - WIELICZKA">
+    <option value="KR1K" label="KR1K - CZERNICHÓW">
+    <option value="KR1M" label="KR1M - MIECHÓW">
+    <option value="KR1O" label="KR1O - OLKUSZ">
+    <option value="KR1P" label="KR1P - KRAKÓW">
+    <option value="KR1S" label="KR1S - SŁOMNIKI">
+    <option value="KR1W" label="KR1W - WADOWICE">
+    <option value="KR1Y" label="KR1Y - MYŚLENICE">
+    <option value="KR2E" label="KR2E - KĘTY">
+    <option value="KR2I" label="KR2I - NIEPOŁOMICE">
+    <option value="KR2K" label="KR2K - KRZESZOWICE">
+    <option value="KR2P" label="KR2P - SKAŁA">
+    <option value="KR2Y" label="KR2Y - DOBCZYCE">
+    <option value="KR3I" label="KR3I - SKAWINA">
+    <option value="KS1B" label="KS1B - BRZOZÓW">
+    <option value="KS1E" label="KS1E - LESKO">
+    <option value="KS1J" label="KS1J - JASŁO">
+    <option value="KS1K" label="KS1K - KROSNO">
+    <option value="KS1S" label="KS1S - SANOK">
+    <option value="KS2E" label="KS2E - USTRZYKI DOLNE">
+    <option value="KZ1A" label="KZ1A - KALISZ">
+    <option value="KZ1E" label="KZ1E - KĘPNO">
+    <option value="KZ1J" label="KZ1J - JAROCIN">
+    <option value="KZ1O" label="KZ1O - OSTRZESZÓW">
+    <option value="KZ1P" label="KZ1P - PLESZEW">
+    <option value="KZ1R" label="KZ1R - KROTOSZYN">
+    <option value="KZ1W" label="KZ1W - OSTRÓW WIELKOPOLSKI">
+    <option value="LD1B" label="LD1B - BRZEZINY">
+    <option value="LD1G" label="LD1G - ZGIERZ">
+    <option value="LD1H" label="LD1H - SKIERNIEWICE">
+    <option value="LD1K" label="LD1K - KUTNO">
+    <option value="LD1M" label="LD1M - ŁÓDŹ">
+    <option value="LD1O" label="LD1O - ŁOWICZ">
+    <option value="LD1P" label="LD1P - PABIANICE">
+    <option value="LD1R" label="LD1R - RAWA MAZOWIECKA">
+    <option value="LD1Y" label="LD1Y - ŁĘCZYCA">
+    <option value="LE1G" label="LE1G - GŁOGÓW">
+    <option value="LE1J" label="LE1J - JAWOR">
+    <option value="LE1L" label="LE1L - LEGNICA">
+    <option value="LE1U" label="LE1U - LUBIN">
+    <option value="LE1Z" label="LE1Z - ZŁOTORYJA">
+    <option value="LM1G" label="LM1G - GRAJEWO">
+    <option value="LM1L" label="LM1L - ŁOMŻA">
+    <option value="LM1W" label="LM1W - WYSOKIE MAZOWIECKIE">
+    <option value="LM1Z" label="LM1Z - ZAMBRÓW">
+    <option value="LU1A" label="LU1A - LUBARTÓW">
+    <option value="LU1B" label="LU1B - BIAŁA PODLASKA">
+    <option value="LU1C" label="LU1C - CHEŁM">
+    <option value="LU1I" label="LU1I - LUBLIN">
+    <option value="LU1K" label="LU1K - KRAŚNIK">
+    <option value="LU1O" label="LU1O - OPOLE LUBELSKIE">
+    <option value="LU1P" label="LU1P - PUŁAWY">
+    <option value="LU1R" label="LU1R - RADZYŃ PODLASKI">
+    <option value="LU1S" label="LU1S - ŚWIDNIK">
+    <option value="LU1U" label="LU1U - ŁUKÓW">
+    <option value="LU1W" label="LU1W - WŁODAWA">
+    <option value="LU1Y" label="LU1Y - RYKI">
+    <option value="NS1G" label="NS1G - GORLICE">
+    <option value="NS1L" label="NS1L - LIMANOWA">
+    <option value="NS1M" label="NS1M - MUSZYNA">
+    <option value="NS1S" label="NS1S - NOWY SĄCZ">
+    <option value="NS1T" label="NS1T - NOWY TARG">
+    <option value="NS1Z" label="NS1Z - ZAKOPANE">
+    <option value="NS2L" label="NS2L - MSZANA DOLNA">
+    <option value="OL1B" label="OL1B - BISKUPIEC">
+    <option value="OL1C" label="OL1C - OLECKO">
+    <option value="OL1E" label="OL1E - EŁK">
+    <option value="OL1G" label="OL1G - GIŻYCKO">
+    <option value="OL1K" label="OL1K - KĘTRZYN">
+    <option value="OL1L" label="OL1L - LIDZBARK WARMIŃSKI">
+    <option value="OL1M" label="OL1M - MRĄGOWO">
+    <option value="OL1N" label="OL1N - NIDZICA">
+    <option value="OL1O" label="OL1O - OLSZTYN">
+    <option value="OL1P" label="OL1P - PISZ">
+    <option value="OL1S" label="OL1S - SZCZYTNO">
+    <option value="OL1Y" label="OL1Y - BARTOSZYCE">
+    <option value="OL2G" label="OL2G - WĘGORZEWO">
+    <option value="OP1B" label="OP1B - BRZEG">
+    <option value="OP1G" label="OP1G - GŁUBCZYCE">
+    <option value="OP1K" label="OP1K - KĘDZIERZYN-KOŹLE">
+    <option value="OP1L" label="OP1L - OLESNO">
+    <option value="OP1N" label="OP1N - NYSA">
+    <option value="OP1O" label="OP1O - OPOLE">
+    <option value="OP1P" label="OP1P - PRUDNIK">
+    <option value="OP1S" label="OP1S - STRZELCE OPOLSKIE">
+    <option value="OP1U" label="OP1U - KLUCZBORK">
+    <option value="OS1M" label="OS1M - OSTRÓW MAZOWIECKA">
+    <option value="OS1O" label="OS1O - OSTROŁĘKA">
+    <option value="OS1P" label="OS1P - PRZASNYSZ">
+    <option value="OS1U" label="OS1U - PUŁTUSK">
+    <option value="OS1W" label="OS1W - WYSZKÓW">
+    <option value="PL1C" label="PL1C - CIECHANÓW">
+    <option value="PL1E" label="PL1E - SIERPC">
+    <option value="PL1G" label="PL1G - GOSTYNIN">
+    <option value="PL1L" label="PL1L - PŁOŃSK">
+    <option value="PL1M" label="PL1M - MŁAWA">
+    <option value="PL1O" label="PL1O - SOCHACZEW">
+    <option value="PL1P" label="PL1P - PŁOCK">
+    <option value="PL1Z" label="PL1Z - ŻYRARDÓW">
+    <option value="PL2M" label="PL2M - ŻUROMIN">
+    <option value="PO1A" label="PO1A - SZAMOTUŁY">
+    <option value="PO1B" label="PO1B - WĄGROWIEC">
+    <option value="PO1D" label="PO1D - ŚRODA WLKP.">
+    <option value="PO1E" label="PO1E - WOLSZTYN">
+    <option value="PO1F" label="PO1F - WRZEŚNIA">
+    <option value="PO1G" label="PO1G - GNIEZNO">
+    <option value="PO1H" label="PO1H - CHODZIEŻ">
+    <option value="PO1I" label="PO1I - PIŁA">
+    <option value="PO1K" label="PO1K - KOŚCIAN">
+    <option value="PO1L" label="PO1L - LESZNO">
+    <option value="PO1M" label="PO1M - ŚREM">
+    <option value="PO1N" label="PO1N - NOWY TOMYŚL">
+    <option value="PO1O" label="PO1O - OBORNIKI">
+    <option value="PO1P" label="PO1P - POZNAŃ (V)">
+    <option value="PO1R" label="PO1R - RAWICZ">
+    <option value="PO1S" label="PO1S - GRODZISK WLKP.">
+    <option value="PO1T" label="PO1T - TRZCIANKA">
+    <option value="PO1Y" label="PO1Y - GOSTYŃ">
+    <option value="PO1Z" label="PO1Z - ZŁOTÓW">
+    <option value="PO2A" label="PO2A - MIĘDZYCHÓD">
+    <option value="PO2H" label="PO2H - WYRZYSK">
+    <option value="PO2P" label="PO2P - POZNAŃ (VI)">
+    <option value="PO2T" label="PO2T - CZARNKÓW">
+    <option value="PR1J" label="PR1J - JAROSŁAW">
+    <option value="PR1L" label="PR1L - LUBACZÓW">
+    <option value="PR1P" label="PR1P - PRZEMYŚL">
+    <option value="PR1R" label="PR1R - PRZEWORSK">
+    <option value="PR2R" label="PR2R - SIENIAWA">
+    <option value="PT1B" label="PT1B - BEŁCHATÓW">
+    <option value="PT1O" label="PT1O - OPOCZNO">
+    <option value="PT1P" label="PT1P - PIOTRKÓW TRYBUNALSKI">
+    <option value="PT1R" label="PT1R - RADOMSKO">
+    <option value="PT1T" label="PT1T - TOMASZÓW MAZOWIECKI">
+    <option value="RA1G" label="RA1G - GRÓJEC">
+    <option value="RA1K" label="RA1K - KOZIENICE">
+    <option value="RA1L" label="RA1L - LIPSKO">
+    <option value="RA1P" label="RA1P - PRZYSUCHA">
+    <option value="RA1R" label="RA1R - RADOM">
+    <option value="RA1S" label="RA1S - SZYDŁOWIEC">
+    <option value="RA1Z" label="RA1Z - ZWOLEŃ">
+    <option value="RA2G" label="RA2G - BIAŁOBRZEGI">
+    <option value="RA2Z" label="RA2Z - PIONKI">
+    <option value="RZ1A" label="RZ1A - ŁAŃCUT">
+    <option value="RZ1D" label="RZ1D - DĘBICA">
+    <option value="RZ1E" label="RZ1E - LEŻAJSK">
+    <option value="RZ1R" label="RZ1R - ROPCZYCE">
+    <option value="RZ1S" label="RZ1S - STRZYŻÓW">
+    <option value="RZ1Z" label="RZ1Z - RZESZÓW">
+    <option value="RZ2Z" label="RZ2Z - TYCZYN">
+    <option value="SI1G" label="SI1G - GARWOLIN">
+    <option value="SI1M" label="SI1M - MIŃSK MAZOWIECKI">
+    <option value="SI1P" label="SI1P - SOKOŁÓW PODLASKI">
+    <option value="SI1S" label="SI1S - SIEDLCE">
+    <option value="SI1W" label="SI1W - WĘGRÓW">
+    <option value="SI2S" label="SI2S - ŁOSICE">
+    <option value="SL1B" label="SL1B - BYTÓW">
+    <option value="SL1C" label="SL1C - CHOJNICE">
+    <option value="SL1L" label="SL1L - LĘBORK">
+    <option value="SL1M" label="SL1M - MIASTKO">
+    <option value="SL1S" label="SL1S - SŁUPSK">
+    <option value="SL1Z" label="SL1Z - CZŁUCHÓW">
+    <option value="SR1L" label="SR1L - ŁASK">
+    <option value="SR1S" label="SR1S - SIERADZ">
+    <option value="SR1W" label="SR1W - WIELUŃ">
+    <option value="SR1Z" label="SR1Z - ZDUŃSKA WOLA">
+    <option value="SR2L" label="SR2L - PODDĘBICE">
+    <option value="SR2W" label="SR2W - PAJĘCZNO">
+    <option value="SU1A" label="SU1A - AUGUSTÓW">
+    <option value="SU1N" label="SU1N - SEJNY">
+    <option value="SU1S" label="SU1S - SUWAŁKI">
+    <option value="SW1D" label="SW1D - DZIERŻONIÓW">
+    <option value="SW1K" label="SW1K - KŁODZKO">
+    <option value="SW1S" label="SW1S - ŚWIDNICA">
+    <option value="SW1W" label="SW1W - WAŁBRZYCH">
+    <option value="SW1Z" label="SW1Z - ZĄBKOWICE ŚLĄSKIE">
+    <option value="SW2K" label="SW2K - NOWA RUDA">
+    <option value="SZ1C" label="SZ1C - CHOSZCZNO">
+    <option value="SZ1G" label="SZ1G - GRYFICE">
+    <option value="SZ1K" label="SZ1K - KAMIEŃ POMORSKI">
+    <option value="SZ1L" label="SZ1L - ŁOBEZ">
+    <option value="SZ1M" label="SZ1M - MYŚLIBÓRZ">
+    <option value="SZ1O" label="SZ1O - GOLENIÓW">
+    <option value="SZ1S" label="SZ1S - SZCZECIN">
+    <option value="SZ1T" label="SZ1T - STARGARD">
+    <option value="SZ1W" label="SZ1W - ŚWINOUJŚCIE">
+    <option value="SZ1Y" label="SZ1Y - GRYFINO">
+    <option value="SZ2S" label="SZ2S - POLICE">
+    <option value="SZ2T" label="SZ2T - PYRZYCE">
+    <option value="TB1K" label="TB1K - KOLBUSZOWA">
+    <option value="TB1M" label="TB1M - MIELEC">
+    <option value="TB1N" label="TB1N - NISKO">
+    <option value="TB1S" label="TB1S - STALOWA WOLA">
+    <option value="TB1T" label="TB1T - TARNOBRZEG">
+    <option value="TO1B" label="TO1B - BRODNICA">
+    <option value="TO1C" label="TO1C - CHEŁMNO">
+    <option value="TO1G" label="TO1G - GOLUB-DOBRZYŃ">
+    <option value="TO1T" label="TO1T - TORUŃ">
+    <option value="TO1U" label="TO1U - GRUDZIĄDZ">
+    <option value="TO1W" label="TO1W - WĄBRZEŹNO">
+    <option value="TR1B" label="TR1B - BRZESKO">
+    <option value="TR1D" label="TR1D - DĄBROWA TARNOWSKA">
+    <option value="TR1O" label="TR1O - BOCHNIA">
+    <option value="TR1T" label="TR1T - TARNÓW">
+    <option value="TR2T" label="TR2T - TUCHÓW">
+    <option value="WA1G" label="WA1G - GRODZISK MAZOWIECKI">
+    <option value="WA1I" label="WA1I - PIASECZNO">
+    <option value="WA1L" label="WA1L - LEGIONOWO">
+    <option value="WA1M" label="WA1M - WARSZAWA (VI)">
+    <option value="WA1N" label="WA1N - NOWY DWÓR MAZOWIECKI">
+    <option value="WA1O" label="WA1O - OTWOCK">
+    <option value="WA1P" label="WA1P - PRUSZKÓW">
+    <option value="WA1W" label="WA1W - WOŁOMIN">
+    <option value="WA2M" label="WA2M - WARSZAWA (VII)">
+    <option value="WA3M" label="WA3M - WARSZAWA (IX)">
+    <option value="WA4M" label="WA4M - WARSZAWA (X)">
+    <option value="WA5M" label="WA5M - WARSZAWA (XIII)">
+    <option value="WA6M" label="WA6M - WARSZAWA (XV)">
+    <option value="WL1A" label="WL1A - ALEKSANDRÓW KUJAWSKI">
+    <option value="WL1L" label="WL1L - LIPNO">
+    <option value="WL1R" label="WL1R - RADZIEJÓW">
+    <option value="WL1W" label="WL1W - WŁOCŁAWEK">
+    <option value="WL1Y" label="WL1Y - RYPIN">
+    <option value="WR1E" label="WR1E - OLEŚNICA">
+    <option value="WR1K" label="WR1K - WROCŁAW">
+    <option value="WR1L" label="WR1L - WOŁÓW">
+    <option value="WR1M" label="WR1M - MILICZ">
+    <option value="WR1O" label="WR1O - OŁAWA">
+    <option value="WR1S" label="WR1S - ŚRODA ŚLĄSKA">
+    <option value="WR1T" label="WR1T - STRZELIN">
+    <option value="WR1W" label="WR1W - TRZEBNICA">
+    <option value="ZA1B" label="ZA1B - BIŁGORAJ">
+    <option value="ZA1H" label="ZA1H - HRUBIESZÓW">
+    <option value="ZA1J" label="ZA1J - JANÓW LUBELSKI">
+    <option value="ZA1K" label="ZA1K - KRASNYSTAW">
+    <option value="ZA1T" label="ZA1T - TOMASZÓW LUBELSKI">
+    <option value="ZA1Z" label="ZA1Z - ZAMOŚĆ">
+    <option value="ZG1E" label="ZG1E - ZIELONA GÓRA">
+    <option value="ZG1G" label="ZG1G - ŻAGAŃ">
+    <option value="ZG1K" label="ZG1K - KROSNO ODRZAŃSKIE">
+    <option value="ZG1N" label="ZG1N - NOWA SÓL">
+    <option value="ZG1R" label="ZG1R - ŻARY">
+    <option value="ZG1S" label="ZG1S - ŚWIEBODZIN">
+    <option value="ZG1W" label="ZG1W - WSCHOWA">
+    <option value="ZG2K" label="ZG2K - GUBIN">
+    <option value="ZG2S" label="ZG2S - SULECHÓW">
+</datalist>
+
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <title>Poradnik</title>
+    <style>
+      body {
+        font-size: 130%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <h3>
+        Poprawne pobieranie kiedy zakładka jest nieaktywna (nie jest na
+        wierzchu)
+      </h3>
+      <hr />
+      <div>
+        Jeżeli napotkałeś problem z zatrzymywaniem się procesu pobierania
+        podczas gdy zakładka z EKW i uruchomionym pobieraniem nie jest aktualnie
+        otwarta to postępuj wg. poniższych kroków (tylko dla przeglądarki
+        Chrome):
+
+        <ul>
+          <li>
+            Wyłącz przeglądarkę Chrome. Pamiętaj aby pozbyć się również procesu
+            działającego w tle jeżeli Chrome jest skonfigurowany do
+            kontynuuowania działania po zamknięciu (włączone ustawienie w
+            opcjach systemowych: chrome://settings/system)
+          </li>
+          <li>
+            Odnajdź skrót do Chrome na pulpicie, kliknij na niego prawym
+            przyciskiem myszy a następnie wejdź we "Właściwości"
+            <br />
+            <img src="chrome_skrot.png" style="width: 70px; height: auto" />
+          </li>
+          <li style="line-height: 150%">
+            W polu "Element docelowy" dopisz na końcu:
+            <span style="background-color: lightgrey; border: 1px solid grey"
+              >&nbsp;--disable-background-timer-throttling</span
+            >, <br />czyli całość w systemie Windows powinna mieć wartość:
+            <span
+              style="
+                background-color: lightgrey;
+                border: 1px solid grey;
+                margin-top: 1px;
+              "
+              >"C:\Program Files\Google\Chrome\Application\chrome.exe"
+              --disable-background-timer-throttling</span
+            >
+            <br />
+            <img
+              src="chrome_wlasciwosci.png"
+              style="width: 300px; height: auto"
+            />
+            <br />
+          </li>
+          <li>Następnie potwierdź zmianę przyciskiem "OK"</li>
+          <li>
+            Uruchom przeglądarkę i używaj wtyczki - od teraz pobieranie powinno
+            działać nawet jeżeli zakładka nie jest aktualnie "na wierzchu" :)
+          </li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>

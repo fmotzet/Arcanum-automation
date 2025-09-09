@@ -1,0 +1,127 @@
+form {
+    /* Just to center the form on the page */
+    margin: 0 auto;
+    width: 500px;
+
+    /* To see the limits of the form */
+    padding: 1em;
+    border: 1px solid #ccc;
+    border-radius: 1em;
+}
+
+div + div {
+    margin-top: 1em;
+}
+
+label.form-label {
+    /* To make sure that all label have the same size and are properly align */
+    display: inline-block;
+    width: 150px;
+    text-align: right;
+    padding-right: 5px;
+}
+
+input[type=text],
+textarea {
+    /* To make sure that all text field have the same font settings
+       By default, textarea are set with a monospace font */
+    font: 1em sans-serif;
+
+    /* To give the same size to all text field */
+    width: 240px;
+
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+
+    /* To harmonize the look & feel of text field border */
+    border: 1px solid #999;
+}
+
+input:focus,
+textarea:focus {
+    /* To give a little highlight on active elements */
+    border-color: #000;
+}
+
+textarea {
+    /* To properly align multiline text field with their label */
+    vertical-align: top;
+
+    /* To give enough room to type some text */
+    height: 5em;
+
+    /* To allow users to resize any textarea vertically
+       It works only on Chrome, Firefox and Safari */
+    resize: vertical;
+}
+
+.button {
+    /* To position the buttons to the same position of the text fields */
+    padding-left: 152px; /* same size as the label elements */
+}
+
+button {
+    /* This extra margin represent the same space as the space between
+       the labels and their text fields */
+    margin-left: 0.5em;
+}
+
+.wydzial-label {
+    display: inline-block;
+    border: 1px solid gray;
+    border-radius: 5px;
+    padding: 2px;
+    margin-top: 2px
+}
+
+.wydzial-label span {
+    color: red;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.frazy-wydzialy {
+    border: 1px solid #ccc;
+    border-radius: 1em;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    position: relative;
+}
+
+.dodaj-fraze-btn {
+    font-size: 11px;
+    position: absolute;
+    right: 14px;
+    bottom: -5px;
+}
+
+.error {
+    color: red;
+    margin-top: initial;
+}
+
+.loading {
+    margin-left: 0.5em;
+}
+
+.loading:after {
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: bottom;
+    -webkit-animation: ellipsis steps(4,end) 900ms infinite;
+    animation: ellipsis steps(4,end) 900ms infinite;
+    content: "\2026"; /* ascii code for the ellipsis character */
+    width: 0px;
+}
+
+@keyframes ellipsis {
+    to {
+        width: 1.25em;
+    }
+}
+
+@-webkit-keyframes ellipsis {
+    to {
+        width: 1.25em;
+    }
+}

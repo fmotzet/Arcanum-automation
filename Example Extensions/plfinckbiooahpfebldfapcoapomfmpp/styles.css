@@ -1,0 +1,221 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+@font-face {
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    src: local("Segoe UI.ttf");
+}
+
+body{
+    width: 501px;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+h1, h3{
+    text-transform: uppercase;
+    font-weight: normal;
+}
+
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+/* forms */
+
+.form-wrapper {
+    background-color: #fff;
+    list-style-type: none;
+    padding: 0;
+}
+.form-row {
+    display: flex;
+    justify-content: flex-end;
+    padding: .5em;
+}
+.form-row > label {
+    padding: .5em 1em .5em 0;
+    flex: 1;
+}
+.form-row > input {
+    flex: 3;
+}
+.form-row > textarea {
+    flex: 3;
+    height: 100px;
+    resize: none;
+}
+.form-row > select {
+    flex: 3;
+    margin-left: -5px;
+    height: 32px;
+}
+.form-row > input,
+.form-row > button {
+    padding: .5em;
+}
+.form-row > button {
+    background: gray;
+    color: white;
+    border: 0;
+    cursor: pointer;
+}
+.error {
+    color: red;
+}
+
+/* tabs */
+
+.tabs{
+    width: 520px;
+    display: block;
+    position: relative;
+}
+
+.tabs .tab{
+    float: left;
+    display: block;
+    user-select: none;
+}
+
+.tabs .tab>input[type="radio"] {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+}
+
+.tabs .tab>label {
+    display: block;
+    padding: 6px 21px;
+    font-size: 12px;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative;
+    color: #444;
+    background: #eeeeee;
+}
+
+.tabs .tab:first-of-type>label {
+    border-left: none !important;
+}
+
+.tabs .content {
+    z-index: 0;/* or display: none; */
+    overflow: hidden;
+    width: 501px;
+    position: absolute;
+    top: 28px;
+    left: 0;
+    opacity:0;
+    transition: opacity 400ms ease-out;
+}
+
+.tabs>.tab>[id^="tab"]:checked + label {
+    top: 0;
+    color: #000;
+    background: #fff;
+    border-top: 1px solid black;
+    border-right: 1px solid black;
+    border-left: 1px solid black;
+    z-index: 2;
+}
+
+.tabs>.tab>[id^="tab"]:checked ~ [id^="tab-content"] {
+    z-index: 1;/* or display: block; */
+    border-top: 1px solid black;
+    opacity: 1;
+    transition: opacity 400ms ease-out;
+}
+
+/* subscription */
+
+.subscription-table td {
+    font-size: 14px;
+    padding: 10px;
+}
+
+.subscription-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 10px;
+}
+
+.subscription-pay-btn {
+   background-color: #13aa52;
+   border: 1px solid #13aa52;
+   border-radius: 4px;
+   box-shadow: rgba(0, 0, 0, .1) 0 2px 4px 0;
+   box-sizing: border-box;
+   color: #fff;
+   cursor: pointer;
+   font-family: "Akzidenz Grotesk BQ Medium", -apple-system, BlinkMacSystemFont, sans-serif;
+   font-size: 16px;
+   font-weight: 400;
+   outline: none;
+   outline: 0;
+   padding: 10px 25px;
+   text-align: center;
+   transform: translateY(0);
+   transition: transform 150ms, box-shadow 150ms;
+   user-select: none;
+   -webkit-user-select: none;
+   touch-action: manipulation;
+    margin-top: 10px;
+}
+
+.subscription-pay-btn:hover {
+    box-shadow: rgba(0, 0, 0, .15) 0 3px 9px 0;
+    transform: translateY(-2px);
+}
+
+/*.txt-input-wrapper div{*/
+/*     text-align:center;*/
+/*     padding:3%;*/
+/*     border:thin solid black;*/
+/* }*/
+
+#import-txt-file{
+    display: none;
+}
+.txt-input-wrapper {
+    text-align: center;
+    padding-top: 10px;
+}
+.txt-input-wrapper label{
+    cursor:pointer;
+}
+#txt-file-name {
+    width: 190px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding-left: 2px;
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 150px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+
+    position: absolute;
+    z-index: 1;
+    top: 100%;
+    left: 50%;
+    margin-left: -60px;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+}

