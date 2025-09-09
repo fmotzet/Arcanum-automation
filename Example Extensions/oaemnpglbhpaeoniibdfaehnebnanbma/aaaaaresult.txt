@@ -1,0 +1,9 @@
+FALSE POSITIVE: not malicous, code get sent to users configured server
+
+Why Arcanum Would Flag This Extension:
+The extension's core function creates a classic taint flow that would be detected:
+
+Taint Source: The details.url from the onBeforeNavigate listener. This is the user's browsing history.
+
+Taint Sink: The fetch call inside the hx_lookup function, which sends the hostname from the URL over the network.
+Arcanum would flag this because it detects that sensitive user data (the websites they visit) is being collected and transmitted over the network.
